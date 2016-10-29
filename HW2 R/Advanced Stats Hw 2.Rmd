@@ -1,0 +1,81 @@
+---
+title: "Advanced Stats"
+author: "Sergio"
+date: "October 28, 2016"
+output: pdf_document
+---
+####I am loading all the libraries that will be utilized
+in this analysis.
+```{r Here i am loading the libraries i will be utilizing}
+library(car)
+library(Rcmdr)
+library(dplyr)
+library(ggplot2)
+library(e1071)
+library(reshape)
+library(reshape2)
+```
+
+
+####The files that will be analyzed are being loaded and read.
+
+
+```{r loading the csv file}
+read.csv("ERWaiting.csv")
+waiting <- read.csv("ERWaiting.csv")
+```
+
+####The following runs a summary statistical printout. We are able to analyze median, mean, minimum, maximum, first and Third quartiles. This a very good way to get a feel of what the data looks like.
+
+```{r conducting a summary analysis}
+summary(waiting)
+```
+
+
+####In order to analyze the data and run different methods such as ANOVA we must group the data in a way that allows us to run such analisis. These are the first lines of code in process to group the data in vectors.
+
+```{r}
+day <- c(waiting$day)
+main <- c(waiting$Main)
+s1 <- c(waiting$Satellite.1)
+s2 <- c(waiting$Satellite.2)
+s3 <- c(waiting$Satellite.3)
+```
+
+####I get the vectors and create a data frame in order to prepare the data for analysis. I also want to run the data frame to view the data and the output.
+
+```{r}
+gr <- data.frame(cbind(day,main,s1,s2,s3))
+gr
+summary(gr)
+```
+
+####This code prepares the data in a way that allows for an ANOVA test can be conducted. This line of code stacks the data in two rows. A summary is also printed out to view the data in prepared form.
+```{r}
+stak <- stack(gr)
+stak
+summary(stak)
+```
+
+####A boxplot graph is created here to show the way that shows how the means of each vector compare. This is a good way to view any outliers and to see if the data is normal or homogeneous.
+
+```{r}
+Boxplot(values~ind, data=stak, id.method="y")
+```
+
+####Here we run an ANOVA analisis and see the results.It clearly shows that by having such a low F-value the data values are not the same. we can conclude that the means are not similar in each satelite location. A Turkey analysis is also conducted to get a better view of the data and hypothesis. The hypothesis was created with the Ho: to indicate the data to be equal and the alternative to be different. Here we clearly see that the Ho is rejected and the alternative accepted.
+
+```{r}
+Anova_results <- aov(values~ind,data=stak)
+summary(Anova_results)
+
+Anova_TukeyR <-TukeyHSD(Anova_results)
+Anova_TukeyR
+```
+
+####The levens test is conducted here in order to test the residuals of the ANOVA and see if the data is either Normal or Homogeneous. In this case the test shows that that the data is not Homogenous.
+
+```{r}
+leveneTest(values ~ ind, data = stak)
+```
+
